@@ -1,0 +1,15 @@
+/META.yml
+/MYMETA.*
+/blib/
+/inc/
+/pm_to_blib
+/MANIFEST.bak
+/Makefile
+/Makefile.old
+*.old
+*.swp
+~$
+/Geo-IP2Location-Lite*tar.gz
+cover_db
+samples/IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE-TIMEZONE-ISP-DOMAIN-NETSPEED-AREACODE-WEATHER-MOBILE-ELEVATION-USAGETYPE-SAMPLE.BIN
+lib/.precomp
