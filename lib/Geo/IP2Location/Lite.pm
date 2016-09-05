@@ -167,7 +167,7 @@ class Geo::IP2Location::Lite {
 		my $indexbaseaddr = %!obj{"ipv4indexbaseaddr"};
 
 		my $ipnum1_2 = $ipnum +> 16;
-		my $indexaddr = $indexbaseaddr + ($ipnum1_2 <+ 3);
+		my $indexaddr = $indexbaseaddr + ($ipnum1_2 +< 3);
 
 		my $low = 0;
 		my $high = $dbcount;
@@ -214,10 +214,13 @@ class Geo::IP2Location::Lite {
 
 						} elsif ( $pos == $COUNTRYLONG ) {
 
-							push( @return_vals, self.readStr(
+							my $return_val = self.readStr(
 								$handle,
 								self.read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 ) ) +3
-							) );
+							);
+
+							$return_val = $return_val.unpack( "A*" );
+							push( @return_vals, $return_val );
 
 						} else {
 
@@ -265,16 +268,17 @@ class Geo::IP2Location::Lite {
 	method readStr ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position, SeekFromBeginning);
 		my $data = $handle.read(1);
-		my $string = $handle.read(Blob.new($data).unpack("C"));
-		return $string;
+		return $handle.read(Blob.new($data).unpack("C"));
 	}
 
 	method readFloat ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(4);
 
-		my $is_little_endian = Blob.new(pack("s",1)).unpack("h*");
-		if $is_little_endian ~~ m/^1/ {
+		my $is_little_endian = pack('N',123456789).unpack('V') == 123456789
+			?? False !! True;
+
+		if $is_little_endian {
 			# "LITTLE ENDIAN - x86\n";
 			return Blob.new($data).unpack("f");
 		} else {

@@ -26,9 +26,7 @@ is( $obj.get_country_long( $ip ),'Switzerland','get_country_long' );
 is( $obj.get_region( $ip ),'Ticino','get_region' );
 is( $obj.get_city( $ip ),'Lugano','get_city' );
 is( $obj.get_isp( $ip ),'Bluewin is an LIR and ISP in Switzerland.','get_isp' );
-is( $obj.get_latitude( $ip ),'46.010078','get_latitude' );
 is( $obj.get_zipcode( $ip ),'6908','get_zipcode' );
-is( $obj.get_longitude( $ip ),'8.960040','get_longitude' );
 is( $obj.get_domain( $ip ),'bluewin.ch','get_domain' );
 is( $obj.get_timezone( $ip ),'+02:00','get_timezone' );
 is( $obj.get_netspeed( $ip ),'DSL','get_netspeed' );
@@ -41,6 +39,9 @@ is( $obj.get_mnc( $ip ),'01','get_mnc' );
 is( $obj.get_mobilebrand( $ip ),'Swisscom','get_mobilebrand' );
 is( $obj.get_elevation( $ip ),'284','get_elevation' );
 is( $obj.get_usagetype( $ip ),'ISP/MOB','get_usagetype' );
+
+is( $obj.get_latitude( $ip ),'46.010078','get_latitude' );
+is( $obj.get_longitude( $ip ),'8.960040','get_longitude' );
 
 is-deeply(
 	[ $obj.get_all( $ip ) ],
