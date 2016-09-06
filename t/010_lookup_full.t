@@ -5,7 +5,7 @@ use Geo::IP2Location::Lite;
 
 my $file = 'samples/IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE-TIMEZONE-ISP-DOMAIN-NETSPEED-AREACODE-WEATHER-MOBILE-ELEVATION-USAGETYPE-SAMPLE.BIN';
 
-plan 20;
+plan 22;
 
 try {
 	$file.IO ~~ :e;
@@ -67,6 +67,7 @@ is-deeply(
 		'284',
 		'ISP/MOB'
 	],
+	'get_all',
 );
 
 done-testing;

@@ -16,6 +16,7 @@ unit module Geo::IP2Location::Lite;
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; If not, see <http://www.gnu.org/licenses/>.
 
+use NativeCall;
 use experimental :pack;
 
 $Geo::IP2Location::Lite::VERSION = '0.08';
@@ -256,13 +257,13 @@ class Geo::IP2Location::Lite {
 	method read32 ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(4);
-		return Blob.new( $data ).unpack("V");
+		return nativecast((int32), Blob.new($data));
 	}
 
 	method read8 ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(1);
-		return Blob.new($data).unpack("C");
+		return nativecast((int8), Blob.new($data));
 	}
 
 	method readStr ( IO::Handle $handle, Int $position ) {
@@ -275,15 +276,18 @@ class Geo::IP2Location::Lite {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(4);
 
-		my $is_little_endian = pack('N',123456789).unpack('V') == 123456789
-			?? False !! True;
+		my sub is-little-endian returns Bool {
+		    my $i = CArray[uint32].new: 0x01234567;
+		    my $j = nativecast(CArray[uint8], $i);
+		    return $j[0] == 0x67;
+		}
 
-		if $is_little_endian {
+		if is-little-endian() {
 			# "LITTLE ENDIAN - x86\n";
-			return Blob.new($data).unpack("f");
+			return nativecast((num32), Blob.new($data));
 		} else {
 			# "BIG ENDIAN - MAC\n";
-			return Blob.new(reverse($data)).unpack("f");
+			return nativecast((num32), Blob.new($data.reverse));
 		}
 	}
 
