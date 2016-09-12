@@ -17,7 +17,6 @@ unit module Geo::IP2Location::Lite;
 # License along with this library; If not, see <http://www.gnu.org/licenses/>.
 
 use NativeCall;
-use experimental :pack;
 
 $Geo::IP2Location::Lite::VERSION = '0.08';
 
@@ -80,28 +79,27 @@ class Geo::IP2Location::Lite {
 
 	my $IPv4_re = / (\d ** 1..3) ** 4 % '.' /;
 
-
 	method open( Str $db_file ) {
 		%!obj{"filehandle"} = open( $db_file, :bin );
 
-		%!obj{"databasetype"} = self.read8(%!obj{"filehandle"}, 1);
-		%!obj{"databasecolumn"} = self.read8(%!obj{"filehandle"}, 2);
-		%!obj{"databaseyear"} = self.read8(%!obj{"filehandle"}, 3);
-		%!obj{"databasemonth"} = self.read8(%!obj{"filehandle"}, 4);
-		%!obj{"databaseday"} = self.read8(%!obj{"filehandle"}, 5);
-		%!obj{"ipv4databasecount"} = self.read32(%!obj{"filehandle"}, 6);
-		%!obj{"ipv4databaseaddr"} = self.read32(%!obj{"filehandle"}, 10);
-		%!obj{"ipv4indexbaseaddr"} = self.read32(%!obj{"filehandle"}, 22);
+		%!obj{"databasetype"} = self!read8(%!obj{"filehandle"}, 1);
+		%!obj{"databasecolumn"} = self!read8(%!obj{"filehandle"}, 2);
+		%!obj{"databaseyear"} = self!read8(%!obj{"filehandle"}, 3);
+		%!obj{"databasemonth"} = self!read8(%!obj{"filehandle"}, 4);
+		%!obj{"databaseday"} = self!read8(%!obj{"filehandle"}, 5);
+		%!obj{"ipv4databasecount"} = self!read32(%!obj{"filehandle"}, 6);
+		%!obj{"ipv4databaseaddr"} = self!read32(%!obj{"filehandle"}, 10);
+		%!obj{"ipv4indexbaseaddr"} = self!read32(%!obj{"filehandle"}, 22);
 	}
 
-	method _get_by_pos ( Str $ipaddr, Int $pos ) {
+	method !get_by_pos ( Str $ipaddr, Int $pos ) {
 		return $INVALID_IP_ADDRESS
 			if ! $pos;
 
-		my ( $ipv,$ipnum ) = self.validate_ip( $ipaddr );
+		my ( $ipv,$ipnum ) = self!validate_ip( $ipaddr );
 
 		return $ipv == 4
-			?? self.get_record( $ipnum,$pos )
+			?? self!get_record( $ipnum,$pos )
 			!! $INVALID_IP_ADDRESS;
 	}
 
@@ -111,30 +109,30 @@ class Geo::IP2Location::Lite {
 		return %!obj{"databaseyear"} ~ "." ~ %!obj{"databasemonth"} ~ "." ~ %!obj{"databaseday"};
 	}
 
-	method get_country            ( Str $ip ) { return ( self._get_by_pos( $ip,$COUNTRYSHORT ),self._get_by_pos( $ip,$COUNTRYLONG ) ) }
-	method get_country_short      ( Str $ip ) { return self._get_by_pos( $ip,$COUNTRYSHORT ); }
-	method get_country_long       ( Str $ip ) { return self._get_by_pos( $ip,$COUNTRYLONG ); }
-	method get_region             ( Str $ip ) { return self._get_by_pos( $ip,$REGION ); }
-	method get_city               ( Str $ip ) { return self._get_by_pos( $ip,$CITY ); }
-	method get_isp                ( Str $ip ) { return self._get_by_pos( $ip,$ISP ); }
-	method get_latitude           ( Str $ip ) { return self._get_by_pos( $ip,$LATITUDE ); }
-	method get_zipcode            ( Str $ip ) { return self._get_by_pos( $ip,$ZIPCODE ); }
-	method get_longitude          ( Str $ip ) { return self._get_by_pos( $ip,$LONGITUDE ); }
-	method get_domain             ( Str $ip ) { return self._get_by_pos( $ip,$DOMAIN ); }
-	method get_timezone           ( Str $ip ) { return self._get_by_pos( $ip,$TIMEZONE ); }
-	method get_netspeed           ( Str $ip ) { return self._get_by_pos( $ip,$NETSPEED ); }
-	method get_iddcode            ( Str $ip ) { return self._get_by_pos( $ip,$IDDCODE ); }
-	method get_areacode           ( Str $ip ) { return self._get_by_pos( $ip,$AREACODE ); }
-	method get_weatherstationcode ( Str $ip ) { return self._get_by_pos( $ip,$WEATHERSTATIONCODE ); }
-	method get_weatherstationname ( Str $ip ) { return self._get_by_pos( $ip,$WEATHERSTATIONNAME ); }
-	method get_mcc                ( Str $ip ) { return self._get_by_pos( $ip,$MCC ); }
-	method get_mnc                ( Str $ip ) { return self._get_by_pos( $ip,$MNC ); }
-	method get_mobilebrand        ( Str $ip ) { return self._get_by_pos( $ip,$MOBILEBRAND ); }
-	method get_elevation          ( Str $ip ) { return self._get_by_pos( $ip,$ELEVATION ); }
-	method get_usagetype          ( Str $ip ) { return self._get_by_pos( $ip,$USAGETYPE ); }
+	method get_country            ( Str $ip ) { return ( self!get_by_pos( $ip,$COUNTRYSHORT ),self!get_by_pos( $ip,$COUNTRYLONG ) ) }
+	method get_country_short      ( Str $ip ) { return self!get_by_pos( $ip,$COUNTRYSHORT ); }
+	method get_country_long       ( Str $ip ) { return self!get_by_pos( $ip,$COUNTRYLONG ); }
+	method get_region             ( Str $ip ) { return self!get_by_pos( $ip,$REGION ); }
+	method get_city               ( Str $ip ) { return self!get_by_pos( $ip,$CITY ); }
+	method get_isp                ( Str $ip ) { return self!get_by_pos( $ip,$ISP ); }
+	method get_latitude           ( Str $ip ) { return self!get_by_pos( $ip,$LATITUDE ); }
+	method get_zipcode            ( Str $ip ) { return self!get_by_pos( $ip,$ZIPCODE ); }
+	method get_longitude          ( Str $ip ) { return self!get_by_pos( $ip,$LONGITUDE ); }
+	method get_domain             ( Str $ip ) { return self!get_by_pos( $ip,$DOMAIN ); }
+	method get_timezone           ( Str $ip ) { return self!get_by_pos( $ip,$TIMEZONE ); }
+	method get_netspeed           ( Str $ip ) { return self!get_by_pos( $ip,$NETSPEED ); }
+	method get_iddcode            ( Str $ip ) { return self!get_by_pos( $ip,$IDDCODE ); }
+	method get_areacode           ( Str $ip ) { return self!get_by_pos( $ip,$AREACODE ); }
+	method get_weatherstationcode ( Str $ip ) { return self!get_by_pos( $ip,$WEATHERSTATIONCODE ); }
+	method get_weatherstationname ( Str $ip ) { return self!get_by_pos( $ip,$WEATHERSTATIONNAME ); }
+	method get_mcc                ( Str $ip ) { return self!get_by_pos( $ip,$MCC ); }
+	method get_mnc                ( Str $ip ) { return self!get_by_pos( $ip,$MNC ); }
+	method get_mobilebrand        ( Str $ip ) { return self!get_by_pos( $ip,$MOBILEBRAND ); }
+	method get_elevation          ( Str $ip ) { return self!get_by_pos( $ip,$ELEVATION ); }
+	method get_usagetype          ( Str $ip ) { return self!get_by_pos( $ip,$USAGETYPE ); }
 
 	method get_all ( Str $ip ) {
-		my @res = self._get_by_pos( $ip,$ALL );
+		my @res = self!get_by_pos( $ip,$ALL );
 
 		if @res[0] eq $INVALID_IP_ADDRESS {
 			return ( $INVALID_IP_ADDRESS x $NUMBER_OF_FIELDS );
@@ -143,16 +141,8 @@ class Geo::IP2Location::Lite {
 		return @res;
 	}
 
-	method get_record ( Int $ipnum, Int $mode ) {
+	method !get_record ( Int $ipnum, Int $mode ) {
 		my $dbtype= %!obj{"databasetype"};
-
-		if ($ipnum eq "") {
-			if ($mode == $ALL) {
-				return ( $NO_IP x $NUMBER_OF_FIELDS );
-			} else {
-				return $NO_IP;
-			}
-		}
 
 		if ( $mode != $ALL ) {
 			if ( %POSITIONS{$mode}[$dbtype] == 0 ) {
@@ -174,8 +164,8 @@ class Geo::IP2Location::Lite {
 		my $high = $dbcount;
 
 		if $indexbaseaddr > 0 {
-			$low = self.read32($handle, $indexaddr);
-			$high = self.read32($handle, $indexaddr + 4);
+			$low = self!read32($handle, $indexaddr);
+			$high = self!read32($handle, $indexaddr + 4);
 		}
 
 		my $mid = 0;
@@ -191,8 +181,8 @@ class Geo::IP2Location::Lite {
 
 		while ($low <= $high) {
 			$mid = ($low + $high) +> 1;
-			$ipfrom = self.read32($handle, $baseaddr + $mid * $dbcolumn * 4);
-			$ipto = self.read32($handle, $baseaddr + ($mid + 1) * $dbcolumn * 4);
+			$ipfrom = self!read32($handle, $baseaddr + $mid * $dbcolumn * 4);
+			$ipto = self!read32($handle, $baseaddr + ($mid + 1) * $dbcolumn * 4);
 			if (($ipno >= $ipfrom) && ($ipno < $ipto)) {
 
 				my @return_vals;
@@ -208,29 +198,27 @@ class Geo::IP2Location::Lite {
 					} else {
 						if ( $pos == $LATITUDE or $pos == $LONGITUDE ) {
 
-							push( @return_vals, sprintf( "%.6f",self.readFloat(
+							push( @return_vals, sprintf( "%.6f",self!readFloat(
 								$handle,
 								$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 )
 							) ) ); 
 
 						} elsif ( $pos == $COUNTRYLONG ) {
 
-							my $return_val = self.readStr(
+							my $return_val = self!readStr(
 								$handle,
-								self.read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 ) ) +3
+								self!read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 ) ) +3
 							);
 
-							$return_val = $return_val.unpack( "A*" );
 							push( @return_vals, $return_val );
 
 						} else {
 
-							my $return_val = self.readStr(
+							my $return_val = self!readStr(
 								$handle,
-								self.read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 ) )
+								self!read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 ) )
 							);
 
-							$return_val = $return_val.unpack( "A*" );
 							if ( $pos == $COUNTRYSHORT && $return_val eq 'UK' ) {
 								$return_val = 'GB';
 							}
@@ -254,25 +242,26 @@ class Geo::IP2Location::Lite {
 		return $UNKNOWN;
 	}
 
-	method read32 ( IO::Handle $handle, Int $position ) {
+	method !read32 ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(4);
 		return nativecast((int32), Blob.new($data));
 	}
 
-	method read8 ( IO::Handle $handle, Int $position ) {
+	method !read8 ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(1);
 		return nativecast((int8), Blob.new($data));
 	}
 
-	method readStr ( IO::Handle $handle, Int $position ) {
+	method !readStr ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position, SeekFromBeginning);
 		my $data = $handle.read(1);
-		return $handle.read(Blob.new($data).unpack("C"));
+		my $return_val = $handle.read(nativecast((int8), Blob.new($data)));
+		return $return_val.decode;
 	}
 
-	method readFloat ( IO::Handle $handle, Int $position ) {
+	method !readFloat ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(4);
 
@@ -291,19 +280,18 @@ class Geo::IP2Location::Lite {
 		}
 	}
 
-	method validate_ip ( Str $ip ) {
+	method !validate_ip ( Str $ip ) {
 		my $ipv = -1;
 		my $ipnum = -1;
 		
-		if self.ip_is_ipv4($ip) {
-			#ipv4 address
+		if self!ip_is_ipv4($ip) {
 			$ipv = 4;
-			$ipnum = self.ip2no($ip);
+			$ipnum = self!ip2no($ip);
 		}
 		return ($ipv, $ipnum);
 	}
 
-	method ip2no ( Str $ip ) {
+	method !ip2no ( Str $ip ) {
 		my @block = split(/\./, $ip);
 		my $no = 0;
 		$no = @block[3];
@@ -313,7 +301,7 @@ class Geo::IP2Location::Lite {
 		return $no;
 	}
 
-	method ip_is_ipv4 ( Str $ip ) {
+	method !ip_is_ipv4 ( Str $ip ) {
 		if $ip ~~ $IPv4_re {
 			return True;
 		} else {
