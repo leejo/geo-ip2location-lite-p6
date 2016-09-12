@@ -7,8 +7,9 @@ plan 12;
 
 my $file = 'samples/IP-COUNTRY-SAMPLE.BIN';
 
-my $ip2 = Geo::IP2Location::Lite.new;
-$ip2.open( $file );
+my $ip2 = Geo::IP2Location::Lite.new(
+	file => $file
+);
 
 is( $ip2.get_module_version,$Geo::IP2Location::Lite::VERSION,'get_module_version' );
 is( $ip2.get_database_version,'5.6.17','get_database_version' );

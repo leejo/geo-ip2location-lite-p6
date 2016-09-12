@@ -14,8 +14,10 @@ CATCH {
 	skip-rest( "get DB24 sample file from ip2location.com to run this test" );
 }
 
-my $obj = Geo::IP2Location::Lite.new;
-$obj.open( $file );
+my $obj = Geo::IP2Location::Lite.new(
+	file => $file
+);
+
 my $ip  = '85.5.10.0';
 
 my $country = $obj.get_country_short( $ip );
