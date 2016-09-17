@@ -73,8 +73,8 @@ class Geo::IP2Location::Lite {
 		my $ipnum = :256[$ipaddr.comb(/\d+/)]; # convert ipv4 to int!
 		my $dbtype= %!file{"databasetype"};
 
-		if ( $mode != $NUMBER_OF_FIELDS ) {
-			if ( @POSITIONS[$mode][$dbtype] == 0 ) {
+		if $mode != $NUMBER_OF_FIELDS {
+			if @POSITIONS[$mode][$dbtype] == 0 {
 				return $NOT_SUPPORTED;
 			}
 		}
@@ -102,7 +102,7 @@ class Geo::IP2Location::Lite {
 		my $ipto = 0;
 		my $ipno = 0;
 
-		if ($realipno == $MAX_IPV4_RANGE) {
+		if $realipno == $MAX_IPV4_RANGE {
 			$ipno = $realipno - 1;
 		} else {
 			$ipno = $realipno;
@@ -112,7 +112,7 @@ class Geo::IP2Location::Lite {
 			$mid = ($low + $high) +> 1;
 			$ipfrom = self!read32($handle, $baseaddr + $mid * $dbcolumn * 4);
 			$ipto = self!read32($handle, $baseaddr + ($mid + 1) * $dbcolumn * 4);
-			if (($ipno >= $ipfrom) && ($ipno < $ipto)) {
+			if ($ipno >= $ipfrom) && ($ipno < $ipto) {
 
 				my @return_vals;
 
@@ -122,10 +122,10 @@ class Geo::IP2Location::Lite {
 
 				for @modes -> $pos {
 
-					if ( @POSITIONS[$pos][$dbtype] == 0 ) {
+					if @POSITIONS[$pos][$dbtype] == 0 {
 						push( @return_vals, $NOT_SUPPORTED );
 					} else {
-						if ( $pos == $LATITUDE or $pos == $LONGITUDE ) {
+						if $pos == $LATITUDE or $pos == $LONGITUDE {
 
 							push( @return_vals, sprintf( "%.6f",self!readFloat(
 								$handle,
@@ -141,7 +141,7 @@ class Geo::IP2Location::Lite {
 									!! self!read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( @POSITIONS[$pos][$dbtype] -1 ) )
 							);
 
-							if ( $pos == $COUNTRY_SHORT && $return_val eq 'UK' ) {
+							if $pos == $COUNTRY_SHORT && $return_val eq 'UK' {
 								$return_val = 'GB';
 							}
 
@@ -153,7 +153,7 @@ class Geo::IP2Location::Lite {
 				return ( $mode == $NUMBER_OF_FIELDS ) ?? @return_vals !! @return_vals[0];
 
 			} else {
-				if ($ipno < $ipfrom) {
+				if $ipno < $ipfrom {
 					$high = $mid - 1;
 				} else {
 					$low = $mid + 1;
