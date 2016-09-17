@@ -20,7 +20,6 @@ class Geo::IP2Location::Lite {
 
 	my $NUMBER_OF_FIELDS   = 20;
 	my $NAME_FIELD         = 25;
-	my $ALL                = 100;
 
 	my @POSITIONS = (
 		[0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 'country_short' ],
@@ -43,6 +42,7 @@ class Geo::IP2Location::Lite {
 		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 18,  0, 18, 11, 18, 'mobilebrand' ],
 		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 19,  0, 19, 'elevation' ],
 		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12, 20, 'usagetype' ],
+		[0...24, 'all' ], # special "give me everything" case
 	);
 
 	submethod BUILD( Str :$file ) {
@@ -69,15 +69,11 @@ class Geo::IP2Location::Lite {
 		( self!get_record( $ip,0 ),self!get_record( $ip,1 ) );
 	}
 
-	method get_all ( IPv4 $ip ) {
-		self!get_record( $ip,$ALL );
-	}
-
 	method !get_record ( IPv4 $ipaddr, Int $mode ) {
 		my $ipnum = :256[$ipaddr.comb(/\d+/)]; # convert ipv4 to int!
 		my $dbtype= %!file{"databasetype"};
 
-		if ( $mode != $ALL ) {
+		if ( $mode != $NUMBER_OF_FIELDS ) {
 			if ( @POSITIONS[$mode][$dbtype] == 0 ) {
 				return $NOT_SUPPORTED;
 			}
@@ -120,7 +116,7 @@ class Geo::IP2Location::Lite {
 
 				my @return_vals;
 
-				my @modes = $mode == $ALL
+				my @modes = $mode == $NUMBER_OF_FIELDS
 					?? ( 0 .. $NUMBER_OF_FIELDS - 1 )
 					!! $mode;
 
@@ -154,7 +150,7 @@ class Geo::IP2Location::Lite {
 					}
 				}
 
-				return ( $mode == $ALL ) ?? @return_vals !! @return_vals[0];
+				return ( $mode == $NUMBER_OF_FIELDS ) ?? @return_vals !! @return_vals[0];
 
 			} else {
 				if ($ipno < $ipfrom) {
