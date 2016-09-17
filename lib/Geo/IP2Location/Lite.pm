@@ -10,7 +10,6 @@ class Geo::IP2Location::Lite {
 	has %!file;
 
 	my $UNKNOWN            = "UNKNOWN IP ADDRESS";
-	my $INVALID_IP_ADDRESS = "INVALID IP ADDRESS";
 	my $NOT_SUPPORTED      = "This parameter is unavailable in selected .BIN data file. Please upgrade data file.";
 	my $MAX_IPV4_RANGE     = 4294967295;
 
@@ -60,38 +59,22 @@ class Geo::IP2Location::Lite {
 
 		for @POSITIONS.kv -> $i,$pos {
 			self.^add_method( "get_{ $pos[$NAME_FIELD] }",method ( IPv4 $ip ) {
-				self!get_by_pos( $ip,$i )
+				self!get_record( $ip,$i )
 			} );
 		}
 
 	}
 
-	method !get_by_pos ( IPv4 $ipaddr, Int $pos ) {
-		my $ipnum = :256[$ipaddr.comb(/\d+/)]; # convert ipv4 to int!
-		return self!get_record( $ipnum,$pos )
-	}
-
-	method get_module_version { return $Geo::IP2Location::Lite::VERSION }
-
-	method get_database_version {
-		return %!file{"databaseyear"} ~ "." ~ %!file{"databasemonth"} ~ "." ~ %!file{"databaseday"};
-	}
-
 	method get_country ( IPv4 $ip ) {
-		( self!get_by_pos( $ip,0 ),self!get_by_pos( $ip,1 ) );
+		( self!get_record( $ip,0 ),self!get_record( $ip,1 ) );
 	}
 
 	method get_all ( IPv4 $ip ) {
-		my @res = self!get_by_pos( $ip,$ALL );
-
-		if @res[0] eq $INVALID_IP_ADDRESS {
-			return ( $INVALID_IP_ADDRESS x $NUMBER_OF_FIELDS );
-		}
-
-		return @res;
+		self!get_record( $ip,$ALL );
 	}
 
-	method !get_record ( Int $ipnum, Int $mode ) {
+	method !get_record ( IPv4 $ipaddr, Int $mode ) {
+		my $ipnum = :256[$ipaddr.comb(/\d+/)]; # convert ipv4 to int!
 		my $dbtype= %!file{"databasetype"};
 
 		if ( $mode != $ALL ) {
@@ -182,26 +165,26 @@ class Geo::IP2Location::Lite {
 			}
 		}
 
-		return $UNKNOWN;
+		$UNKNOWN;
 	}
 
 	method !read32 ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(4);
-		return nativecast((int32), Blob.new($data));
+		nativecast((int32), Blob.new($data));
 	}
 
 	method !read8 ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position-1, SeekFromBeginning);
 		my $data = $handle.read(1);
-		return nativecast((int8), Blob.new($data));
+		nativecast((int8), Blob.new($data));
 	}
 
 	method !readStr ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position, SeekFromBeginning);
 		my $data = $handle.read(1);
 		my $return_val = $handle.read(nativecast((int8), Blob.new($data)));
-		return $return_val.decode;
+		$return_val.decode;
 	}
 
 	method !readFloat ( IO::Handle $handle, Int $position ) {
@@ -214,9 +197,9 @@ class Geo::IP2Location::Lite {
 		    return $j[0] == 0x67;
 		}
 
-		return is-little-endian()
-			?? return nativecast((num32), Blob.new($data))
-			!! return nativecast((num32), Blob.new($data.reverse));
+		is-little-endian()
+			?? nativecast((num32), Blob.new($data))
+			!! nativecast((num32), Blob.new($data.reverse));
 	}
 
 }

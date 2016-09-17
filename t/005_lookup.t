@@ -3,16 +3,13 @@
 use Test;
 use Geo::IP2Location::Lite;
 
-plan 12;
+plan 10;
 
 my $file = 'samples/IP-COUNTRY-SAMPLE.BIN';
 
 my $ip2 = Geo::IP2Location::Lite.new(
 	file => $file
 );
-
-is( $ip2.get_module_version,$Geo::IP2Location::Lite::VERSION,'get_module_version' );
-is( $ip2.get_database_version,'5.6.17','get_database_version' );
 
 my %ips = (
 	'19.5.10.1' => 'US',
