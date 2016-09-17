@@ -9,6 +9,43 @@ class Geo::IP2Location::Lite {
 	subset IPv4 of Str where / (\d ** 1..3) ** 4 % '.' /;
 	has %!file;
 
+	my $UNKNOWN            = "UNKNOWN IP ADDRESS";
+	my $INVALID_IP_ADDRESS = "INVALID IP ADDRESS";
+	my $NOT_SUPPORTED      = "This parameter is unavailable in selected .BIN data file. Please upgrade data file.";
+	my $MAX_IPV4_RANGE     = 4294967295;
+
+	my $COUNTRY_SHORT      = 0;
+	my $COUNTRY_LONG       = 1;
+	my $LATITUDE           = 5;
+	my $LONGITUDE          = 6;
+
+	my $NUMBER_OF_FIELDS   = 20;
+	my $NAME_FIELD         = 25;
+	my $ALL                = 100;
+
+	my @POSITIONS = (
+		[0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 'country_short' ],
+		[0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 'country_long' ],
+		[0,  0,  0,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3, 'region' ],
+		[0,  0,  0,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 'city' ],
+		[0,  0,  3,  0,  5,  0,  7,  5,  7,  0,  8,  0,  9,  0,  9,  0,  9,  0,  9,  7,  9,  0,  9,  7,  9, 'isp' ],
+		[0,  0,  0,  0,  0,  5,  5,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5, 'latitude' ],
+		[0,  0,  0,  0,  0,  6,  6,  0,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 'longitude' ],
+		[0,  0,  0,  0,  0,  0,  0,  6,  8,  0,  9,  0, 10,  0, 10,  0, 10,  0, 10,  8, 10,  0, 10,  8, 10, 'domain' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7,  7,  7,  0,  7,  7,  7,  0,  7,  0,  7,  7,  7,  0,  7, 'zipcode' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  8,  7,  8,  8,  8,  7,  8,  0,  8,  8,  8,  0,  8, 'timezone' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8, 11,  0, 11,  8, 11,  0, 11,  0, 11,  0, 11, 'netspeed' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9, 12,  0, 12,  0, 12,  9, 12,  0, 12, 'iddcode' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 13,  0, 13,  0, 13, 10, 13,  0, 13, 'areacode' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9, 14,  0, 14,  0, 14,  0, 14, 'weatherstationcode' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 15,  0, 15,  0, 15,  0, 15, 'weatherstationname' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9, 16,  0, 16,  9, 16, 'mcc' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 17,  0, 17, 10, 17, 'mnc' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 18,  0, 18, 11, 18, 'mobilebrand' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 19,  0, 19, 'elevation' ],
+		[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12, 20, 'usagetype' ],
+	);
+
 	submethod BUILD( Str :$file ) {
 		%!file{"filehandle"} = open( $file, :bin );
 
@@ -20,59 +57,14 @@ class Geo::IP2Location::Lite {
 		%!file{"ipv4databasecount"} = self!read32(%!file{"filehandle"}, 6);
 		%!file{"ipv4databaseaddr"}  = self!read32(%!file{"filehandle"}, 10);
 		%!file{"ipv4indexbaseaddr"} = self!read32(%!file{"filehandle"}, 22);
+
+		for @POSITIONS.kv -> $i,$pos {
+			self.^add_method( "get_{ $pos[$NAME_FIELD] }",method ( IPv4 $ip ) {
+				self!get_by_pos( $ip,$i )
+			} );
+		}
+
 	}
-
-	my $UNKNOWN            = "UNKNOWN IP ADDRESS";
-	my $INVALID_IP_ADDRESS = "INVALID IP ADDRESS";
-	my $NOT_SUPPORTED      = "This parameter is unavailable in selected .BIN data file. Please upgrade data file.";
-	my $MAX_IPV4_RANGE     = 4294967295;
-
-	my $COUNTRYSHORT       = 1;
-	my $COUNTRYLONG        = 2;
-	my $REGION             = 3;
-	my $CITY               = 4;
-	my $ISP                = 5;
-	my $LATITUDE           = 6;
-	my $LONGITUDE          = 7;
-	my $DOMAIN             = 8;
-	my $ZIPCODE            = 9;
-	my $TIMEZONE           = 10;
-	my $NETSPEED           = 11;
-	my $IDDCODE            = 12;
-	my $AREACODE           = 13;
-	my $WEATHERSTATIONCODE = 14;
-	my $WEATHERSTATIONNAME = 15;
-	my $MCC                = 16;
-	my $MNC                = 17;
-	my $MOBILEBRAND        = 18;
-	my $ELEVATION          = 19;
-	my $USAGETYPE          = 20;
-
-	my $NUMBER_OF_FIELDS   = 20;
-	my $ALL                = 100;
-
-	my %POSITIONS = (
-		$COUNTRYSHORT       => [0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2],
-		$COUNTRYLONG        => [0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2],
-		$REGION             => [0,  0,  0,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3],
-		$CITY               => [0,  0,  0,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4],
-		$LATITUDE           => [0,  0,  0,  0,  0,  5,  5,  0,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5],
-		$LONGITUDE          => [0,  0,  0,  0,  0,  6,  6,  0,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6],
-		$ZIPCODE            => [0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7,  7,  7,  0,  7,  7,  7,  0,  7,  0,  7,  7,  7,  0,  7],
-		$TIMEZONE           => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  8,  7,  8,  8,  8,  7,  8,  0,  8,  8,  8,  0,  8],
-		$ISP                => [0,  0,  3,  0,  5,  0,  7,  5,  7,  0,  8,  0,  9,  0,  9,  0,  9,  0,  9,  7,  9,  0,  9,  7,  9],
-		$DOMAIN             => [0,  0,  0,  0,  0,  0,  0,  6,  8,  0,  9,  0, 10,  0, 10,  0, 10,  0, 10,  8, 10,  0, 10,  8, 10],
-		$NETSPEED           => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8, 11,  0, 11,  8, 11,  0, 11,  0, 11,  0, 11],
-		$IDDCODE            => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9, 12,  0, 12,  0, 12,  9, 12,  0, 12],
-		$AREACODE           => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 13,  0, 13,  0, 13, 10, 13,  0, 13],
-		$WEATHERSTATIONCODE => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9, 14,  0, 14,  0, 14,  0, 14],
-		$WEATHERSTATIONNAME => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 15,  0, 15,  0, 15,  0, 15],
-		$MCC                => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9, 16,  0, 16,  9, 16],
-		$MNC                => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10, 17,  0, 17, 10, 17],
-		$MOBILEBRAND        => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 18,  0, 18, 11, 18],
-		$ELEVATION          => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11, 19,  0, 19],
-		$USAGETYPE          => [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12, 20],
-	);
 
 	method !get_by_pos ( IPv4 $ipaddr, Int $pos ) {
 		my $ipnum = :256[$ipaddr.comb(/\d+/)]; # convert ipv4 to int!
@@ -85,27 +77,9 @@ class Geo::IP2Location::Lite {
 		return %!file{"databaseyear"} ~ "." ~ %!file{"databasemonth"} ~ "." ~ %!file{"databaseday"};
 	}
 
-	method get_country            ( IPv4 $ip ) { return ( self!get_by_pos( $ip,$COUNTRYSHORT ),self!get_by_pos( $ip,$COUNTRYLONG ) ) }
-	method get_country_short      ( IPv4 $ip ) { return self!get_by_pos( $ip,$COUNTRYSHORT ); }
-	method get_country_long       ( IPv4 $ip ) { return self!get_by_pos( $ip,$COUNTRYLONG ); }
-	method get_region             ( IPv4 $ip ) { return self!get_by_pos( $ip,$REGION ); }
-	method get_city               ( IPv4 $ip ) { return self!get_by_pos( $ip,$CITY ); }
-	method get_isp                ( IPv4 $ip ) { return self!get_by_pos( $ip,$ISP ); }
-	method get_latitude           ( IPv4 $ip ) { return self!get_by_pos( $ip,$LATITUDE ); }
-	method get_zipcode            ( IPv4 $ip ) { return self!get_by_pos( $ip,$ZIPCODE ); }
-	method get_longitude          ( IPv4 $ip ) { return self!get_by_pos( $ip,$LONGITUDE ); }
-	method get_domain             ( IPv4 $ip ) { return self!get_by_pos( $ip,$DOMAIN ); }
-	method get_timezone           ( IPv4 $ip ) { return self!get_by_pos( $ip,$TIMEZONE ); }
-	method get_netspeed           ( IPv4 $ip ) { return self!get_by_pos( $ip,$NETSPEED ); }
-	method get_iddcode            ( IPv4 $ip ) { return self!get_by_pos( $ip,$IDDCODE ); }
-	method get_areacode           ( IPv4 $ip ) { return self!get_by_pos( $ip,$AREACODE ); }
-	method get_weatherstationcode ( IPv4 $ip ) { return self!get_by_pos( $ip,$WEATHERSTATIONCODE ); }
-	method get_weatherstationname ( IPv4 $ip ) { return self!get_by_pos( $ip,$WEATHERSTATIONNAME ); }
-	method get_mcc                ( IPv4 $ip ) { return self!get_by_pos( $ip,$MCC ); }
-	method get_mnc                ( IPv4 $ip ) { return self!get_by_pos( $ip,$MNC ); }
-	method get_mobilebrand        ( IPv4 $ip ) { return self!get_by_pos( $ip,$MOBILEBRAND ); }
-	method get_elevation          ( IPv4 $ip ) { return self!get_by_pos( $ip,$ELEVATION ); }
-	method get_usagetype          ( IPv4 $ip ) { return self!get_by_pos( $ip,$USAGETYPE ); }
+	method get_country ( IPv4 $ip ) {
+		( self!get_by_pos( $ip,0 ),self!get_by_pos( $ip,1 ) );
+	}
 
 	method get_all ( IPv4 $ip ) {
 		my @res = self!get_by_pos( $ip,$ALL );
@@ -121,7 +95,7 @@ class Geo::IP2Location::Lite {
 		my $dbtype= %!file{"databasetype"};
 
 		if ( $mode != $ALL ) {
-			if ( %POSITIONS{$mode}[$dbtype] == 0 ) {
+			if ( @POSITIONS[$mode][$dbtype] == 0 ) {
 				return $NOT_SUPPORTED;
 			}
 		}
@@ -164,38 +138,31 @@ class Geo::IP2Location::Lite {
 				my @return_vals;
 
 				my @modes = $mode == $ALL
-					?? ( $COUNTRYSHORT .. $NUMBER_OF_FIELDS )
+					?? ( 0 .. $NUMBER_OF_FIELDS - 1 )
 					!! $mode;
 
 				for @modes -> $pos {
 
-					if ( %POSITIONS{$pos}[$dbtype] == 0 ) {
+					if ( @POSITIONS[$pos][$dbtype] == 0 ) {
 						push( @return_vals, $NOT_SUPPORTED );
 					} else {
 						if ( $pos == $LATITUDE or $pos == $LONGITUDE ) {
 
 							push( @return_vals, sprintf( "%.6f",self!readFloat(
 								$handle,
-								$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 )
+								$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( @POSITIONS[$pos][$dbtype] -1 )
 							) ) ); 
-
-						} elsif ( $pos == $COUNTRYLONG ) {
-
-							my $return_val = self!readStr(
-								$handle,
-								self!read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 ) ) +3
-							);
-
-							push( @return_vals, $return_val );
 
 						} else {
 
 							my $return_val = self!readStr(
 								$handle,
-								self!read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( %POSITIONS{$pos}[$dbtype] -1 ) )
+								$pos == $COUNTRY_LONG
+									?? self!read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( @POSITIONS[$pos][$dbtype] -1 ) ) +3
+									!! self!read32( $handle,$baseaddr + ( $mid * $dbcolumn * 4 ) + 4 * ( @POSITIONS[$pos][$dbtype] -1 ) )
 							);
 
-							if ( $pos == $COUNTRYSHORT && $return_val eq 'UK' ) {
+							if ( $pos == $COUNTRY_SHORT && $return_val eq 'UK' ) {
 								$return_val = 'GB';
 							}
 
