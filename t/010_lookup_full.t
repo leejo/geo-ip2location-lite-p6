@@ -12,6 +12,7 @@ try {
 }
 CATCH {
 	skip-rest( "get DB24 sample file from ip2location.com to run this test" );
+	exit( 0 );
 }
 
 my $obj = Geo::IP2Location::Lite.new(
