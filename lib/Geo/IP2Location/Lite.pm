@@ -1,13 +1,11 @@
-unit module Geo::IP2Location::Lite;
+unit module Geo::IP2Location::Lite:auth<github:leejo>:ver<0.9.0>;
 
 use NativeCall;
-
-$Geo::IP2Location::Lite::VERSION = '0.08';
 
 class Geo::IP2Location::Lite {
 
 	subset IPv4 of Str where / (\d ** 1..3) ** 4 % '.' /;
-	has %!file;
+	has %!file is required;
 
 	my $UNKNOWN            = "UNKNOWN IP ADDRESS";
 	my $NOT_SUPPORTED      = "This parameter is unavailable in selected .BIN data file. Please upgrade data file.";
@@ -179,8 +177,7 @@ class Geo::IP2Location::Lite {
 	method !readStr ( IO::Handle $handle, Int $position ) {
 		$handle.seek($position, SeekFromBeginning);
 		my $data = $handle.read(1);
-		my $return_val = $handle.read(nativecast((int8), Blob.new($data)));
-		$return_val.decode;
+		$handle.read(nativecast((int8), Blob.new($data))).decode;
 	}
 
 	method !readFloat ( IO::Handle $handle, Int $position ) {
@@ -190,7 +187,7 @@ class Geo::IP2Location::Lite {
 		my sub is-little-endian returns Bool {
 		    my $i = CArray[uint32].new: 0x01234567;
 		    my $j = nativecast(CArray[uint8], $i);
-		    return $j[0] == 0x67;
+		    $j[0] == 0x67;
 		}
 
 		is-little-endian()
