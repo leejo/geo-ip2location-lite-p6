@@ -70,7 +70,7 @@ When constructing the object the file parameter is mandatory.
 Lee Johnson `leejo@cpan.org`. If you would like to contribute documentation,
 features, bug fixes, or anything else then please raise an issue / pull request:
 
-    https://github.com/Humanstate/geo-ip2location-lite-v6
+    https://github.com/leejo/geo-ip2location-lite-v6
 
 # LICENSE
 

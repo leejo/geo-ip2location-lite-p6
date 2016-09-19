@@ -68,7 +68,7 @@ L<http://www.ip2location.com>
 Lee Johnson C<leejo@cpan.org>. If you would like to contribute documentation,
 features, bug fixes, or anything else then please raise an issue / pull request:
 
-    https://github.com/Humanstate/geo-ip2location-lite-v6
+    https://github.com/leejo/geo-ip2location-lite-v6
 
 =head1 LICENSE
 
