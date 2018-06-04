@@ -188,7 +188,7 @@ class Geo::IP2Location::Lite {
 		    my $i = CArray[uint32].new: 0x01234567;
 		    my $j = nativecast(CArray[uint8], $i);
 		    $j[0] == 0x67;
-		}
+		};
 
 		$is-little-endian
 			?? nativecast((num32), Blob.new($data))
