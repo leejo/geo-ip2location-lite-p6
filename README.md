@@ -4,8 +4,8 @@ Geo::IP2Location::Lite - Lightweight lookup of IPv4 address details using BIN fi
 
 <div>
 
-    <a href='https://travis-ci.org/leejo/geo-ip2location-lite-p6?branch=master'><img src='https://travis-ci.org/leejo/geo-ip2location-lite-p6.svg?branch=master' alt='Build Status' /></a>
-    <a href='https://coveralls.io/r/leejo/geo-ip2location-lite-p6?branch=master'><img src='https://coveralls.io/repos/leejo/geo-ip2location-lite-p6/badge.png?branch=master' alt='Coverage Status' /></a>
+<a href='https://travis-ci.org/leejo/geo-ip2location-lite-p6?branch=master'><img src='https://travis-ci.org/leejo/geo-ip2location-lite-p6.svg?branch=master' alt='Build Status' /></a>
+<a href='https://coveralls.io/r/leejo/geo-ip2location-lite-p6?branch=master'><img src='https://coveralls.io/repos/leejo/geo-ip2location-lite-p6/badge.png?branch=master' alt='Coverage Status' /></a>
 </div>
 
 # SYNOPSIS
